@@ -1,3 +1,5 @@
 - hosts: all
   tasks:
     - shell: source ansible/hacking/env-setup && ansible-test network-integration openvswitch-.* -vvv
+      args:
+        executable: /bin/bash
