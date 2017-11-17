@@ -1,3 +1,3 @@
 - hosts: all
   tasks:
-    - shell: ansible-test network-integration openvswitch-.* -vvv
+    - shell: source ansible/hacking/env-setup && ansible-test network-integration openvswitch-.* -vvv
