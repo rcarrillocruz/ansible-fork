@@ -1,0 +1,9 @@
+- project:
+    name: rcarrillocruz-org/ansible-fork
+    check:
+      jobs:
+        - run-openvswitch-integration-tests
+
+- job:
+    name: run-openvswitch-integration-tests
+    run: playbooks/run-openvswitch-integration-tests/run.yaml
