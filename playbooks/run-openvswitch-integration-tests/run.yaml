@@ -1,3 +1,3 @@
 - hosts: all
   tasks:
-    - command: echo "Hello world"
+    - shell: ansible-test network-integration openvswitch-.* -vvv
