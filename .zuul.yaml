@@ -6,4 +6,6 @@
 
 - job:
     name: run-openvswitch-integration-tests
+    files:
+      - ^lib/ansible/modules/network/ovs/.*$
     run: playbooks/run-openvswitch-integration-tests/run.yaml
