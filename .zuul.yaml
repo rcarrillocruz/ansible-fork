@@ -9,3 +9,9 @@
     files:
       - ^lib/ansible/modules/network/ovs/.*$
     run: playbooks/run-openvswitch-integration-tests/run.yaml
+    nodeset:
+      nodes:
+        - name: bastion
+          label: ubuntu-xenial
+        - name: openvswitch
+          label: ubuntu-xenial
