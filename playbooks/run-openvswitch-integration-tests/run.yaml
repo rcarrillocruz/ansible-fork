@@ -1,4 +1,4 @@
-- hosts: localhost
+- hosts: bastion
   tasks:
     - shell: source hacking/env-setup && ansible-test network-integration openvswitch-.* -vvv
       args:
