@@ -11,8 +11,7 @@
           "{{ hostvars['openvswitch']['ansible_host'] }}" ansible_connection=local
         dest: /tmp/inventory
 
-    - shell: "pip install -r {{ zuul.project_src_dir }}/requirements.txt"
-    - shell: source hacking/env-setup && ansible-test network-integration openvswitch_.* --inventory /tmp/inventory -vvv
+    - shell: pip install -r requirements.txt && source hacking/env-setup && ansible-test network-integration openvswitch_.* --inventory /tmp/inventory -vvv
       args:
         executable: /bin/bash
         chdir: "{{ zuul.project.src_dir }}"
