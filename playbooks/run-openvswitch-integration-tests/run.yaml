@@ -1,5 +1,7 @@
 - hosts: bastion
   tasks:
+    - name: Start zuul console daemon
+      zuul_console:
     - name: Synchronize src repos to workspace directory.
       synchronize:
         dest: .
