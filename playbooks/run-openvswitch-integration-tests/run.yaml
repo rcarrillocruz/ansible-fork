@@ -4,8 +4,14 @@
       synchronize:
         dest: .
         src: "{{ zuul.executor.src_root }}"
+    - name: Create inventory for openvswitch node
+      copy:
+        content: |
+          [openvswitch]
+          "{{ hostvars['openvswitch']['ansible_host'] }}" ansible_connection=local
+        dest: /tmp/inventory
 
-    - shell: source hacking/env-setup && ansible-test network-integration openvswitch-.* -vvv
+    - shell: source hacking/env-setup && ansible-test network-integration openvswitch-.* --inventory /tmp/inventory -vvv
       args:
         executable: /bin/bash
         chdir: "{{ zuul.project.src_dir }}"
