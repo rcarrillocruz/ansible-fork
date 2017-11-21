@@ -2,7 +2,8 @@
     name: rcarrillocruz-org/ansible-fork
     check:
       jobs:
-        - run-openvswitch-integration-tests
+        - run-openvswitch-integration-tests-a_b
+        - run-openvswitch-integration-tests-c_z
 
 - job:
     name: run-openvswitch-integration-tests-a_b
