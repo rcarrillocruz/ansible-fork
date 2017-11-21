@@ -1,4 +1,5 @@
 ---
+
 - name: Make sure test bridge does not exist before tests
   command: ovs-vsctl del-br br-test
   ignore_errors: yes

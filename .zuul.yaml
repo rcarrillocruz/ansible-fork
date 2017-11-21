@@ -9,7 +9,9 @@
     name: run-openvswitch-integration-tests-a_b
     files:
       - ^lib/ansible/modules/network/ovs/.*$
-      - ^test/integration/targets/openvswitch.*
+      - ^test/integration/targets/openvswitch.*$
+      - ^\.zuul.yaml$
+      - ^playbooks/run-openvswitch-integration-tests-a_b/.*$
     run: playbooks/run-openvswitch-integration-tests-a_b/run.yaml
     nodeset:
       nodes:
@@ -22,7 +24,9 @@
     name: run-openvswitch-integration-tests-c_z
     files:
       - ^lib/ansible/modules/network/ovs/.*$
-      - ^test/integration/targets/openvswitch.*
+      - ^test/integration/targets/openvswitch.*$
+      - ^\.zuul.yaml$
+      - ^playbooks/run-openvswitch-integration-tests-c_z/.*$
     run: playbooks/run-openvswitch-integration-tests-c_z/run.yaml
     nodeset:
       nodes:
