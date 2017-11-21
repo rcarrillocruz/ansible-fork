@@ -8,6 +8,7 @@
     name: run-openvswitch-integration-tests
     files:
       - ^lib/ansible/modules/network/ovs/.*$
+      - ^test/integration/targets/openvswitch.*
     run: playbooks/run-openvswitch-integration-tests/run.yaml
     nodeset:
       nodes:
