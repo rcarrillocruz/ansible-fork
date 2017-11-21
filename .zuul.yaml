@@ -5,7 +5,20 @@
         - run-openvswitch-integration-tests
 
 - job:
-    name: run-openvswitch-integration-tests
+    name: run-openvswitch-integration-tests-a_b
+    files:
+      - ^lib/ansible/modules/network/ovs/.*$
+      - ^test/integration/targets/openvswitch.*
+    run: playbooks/run-openvswitch-integration-tests/run.yaml
+    nodeset:
+      nodes:
+        - name: bastion
+          label: ubuntu-xenial
+        - name: openvswitch
+          label: ubuntu-xenial
+
+- job:
+    name: run-openvswitch-integration-tests-c_z
     files:
       - ^lib/ansible/modules/network/ovs/.*$
       - ^test/integration/targets/openvswitch.*
