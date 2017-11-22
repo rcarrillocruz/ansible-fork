@@ -18,3 +18,5 @@
           label: ubuntu-xenial
         - name: openvswitch
           label: ubuntu-xenial
+    vars:
+      platform: openvswitch
