@@ -1,0 +1,4 @@
+- hosts: bastion
+  roles:
+    - prepare-workspace
+    - run-network-integration-tests

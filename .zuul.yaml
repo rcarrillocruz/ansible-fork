@@ -20,3 +20,20 @@
           label: ubuntu-xenial
     vars:
       platform: openvswitch
+
+- job:
+    name: run-vyos-integration-tests
+    files:
+      - ^lib/ansible/modules/network/vyos/.*$
+      - ^test/integration/targets/vyos.*
+      - ^\.zuul.yaml$
+      - ^playbooks/run-vyos-integration-tests/.*$
+    run: playbooks/run-vyos-integration-tests/run.yaml
+    nodeset:
+      nodes:
+        - name: bastion
+          label: ubuntu-xenial
+        - name: vyos
+          label: ubuntu-xenial
+    vars:
+      platform: vyos
