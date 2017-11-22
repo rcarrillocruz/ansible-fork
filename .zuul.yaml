@@ -38,3 +38,4 @@
           label: vyos
     vars:
       platform: vyos
+      tests_user: vyos
