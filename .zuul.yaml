@@ -19,6 +19,9 @@
           label: ubuntu-xenial
         - name: openvswitch
           label: ubuntu-xenial
+    vars:
+      platform: openvswitch
+      tests_regex: _[a-b].*
 
 - job:
     name: run-openvswitch-integration-tests-c_z
@@ -36,3 +39,4 @@
           label: ubuntu-xenial
     vars:
       platform: openvswitch
+      tests_regex: _[c-z].*
