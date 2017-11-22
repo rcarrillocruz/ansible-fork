@@ -3,6 +3,7 @@
     check:
       jobs:
         - run-openvswitch-integration-tests
+        - run-vyos-integration-tests
 
 - job:
     name: run-openvswitch-integration-tests
