@@ -1,11 +1,9 @@
 - hosts: bastion
+  roles:
+    - prepare-workspace
   tasks:
     - name: Start zuul console daemon
       zuul_console:
-    - name: Synchronize src repos to workspace directory.
-      synchronize:
-        dest: .
-        src: "{{ zuul.executor.src_root }}"
     - name: Create inventory for openvswitch node
       copy:
         content: |
