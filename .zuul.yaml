@@ -9,6 +9,8 @@
     files:
       - ^lib/ansible/modules/network/ovs/.*$
       - ^test/integration/targets/openvswitch.*
+      - ^\.zuul.yaml$
+      - ^playbooks/run-openvswitch-integration-tests/.*$
     run: playbooks/run-openvswitch-integration-tests/run.yaml
     nodeset:
       nodes:
