@@ -10,7 +10,6 @@
     files:
       - ^lib/ansible/modules/network/ovs/.*$
       - ^test/integration/targets/openvswitch.*
-      - ^\.zuul.yaml$
       - ^playbooks/run-openvswitch-integration-tests/.*$
     run: playbooks/run-openvswitch-integration-tests/run.yaml
     nodeset:
@@ -27,7 +26,6 @@
     files:
       - ^lib/ansible/modules/network/vyos/.*$
       - ^test/integration/targets/vyos.*
-      - ^\.zuul.yaml$
       - ^playbooks/run-vyos-integration-tests/.*$
     run: playbooks/run-vyos-integration-tests/run.yaml
     nodeset:
