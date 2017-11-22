@@ -33,7 +33,7 @@
         - name: bastion
           label: ubuntu-xenial
         - name: vyos
-          label: vyos
+          label: vyos-1.1.7
     vars:
       platform: vyos
       tests_user: vyos
