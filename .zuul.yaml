@@ -35,6 +35,6 @@
         - name: bastion
           label: ubuntu-xenial
         - name: vyos
-          label: ubuntu-xenial
+          label: vyos
     vars:
       platform: vyos
