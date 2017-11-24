@@ -1,7 +1,7 @@
 - hosts: bastion
   pre_tasks:
     - wait_for:
-        host: "{{ hostvars[nxos]['ansible_host'] }}"
+        host: "{{ hostvars[test_platform]['ansible_host'] }}"
         port: "{{ test_port }}"
   roles:
     - prepare-workspace
