@@ -53,3 +53,4 @@
           label: nxos-7.0.3.I5.1
     vars:
       platform: nxos
+      test_port: 8022
