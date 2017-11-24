@@ -3,13 +3,13 @@
     check:
       jobs:
         - run-openvswitch-integration-tests
+        - run-vyos-integration-tests
 
 - job:
     name: run-openvswitch-integration-tests
     files:
       - ^lib/ansible/modules/network/ovs/.*$
       - ^test/integration/targets/openvswitch.*
-      - ^\.zuul.yaml$
       - ^playbooks/run-openvswitch-integration-tests/.*$
     run: playbooks/run-openvswitch-integration-tests/run.yaml
     nodeset:
@@ -20,3 +20,20 @@
           label: ubuntu-xenial
     vars:
       platform: openvswitch
+
+- job:
+    name: run-vyos-integration-tests
+    files:
+      - ^lib/ansible/modules/network/vyos/.*$
+      - ^test/integration/targets/vyos.*
+      - ^playbooks/run-vyos-integration-tests/.*$
+    run: playbooks/run-vyos-integration-tests/run.yaml
+    nodeset:
+      nodes:
+        - name: bastion
+          label: ubuntu-xenial
+        - name: vyos
+          label: vyos-1.1.7
+    vars:
+      platform: vyos
+      tests_user: vyos
