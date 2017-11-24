@@ -4,6 +4,7 @@
       jobs:
         - run-openvswitch-integration-tests
         - run-vyos-integration-tests
+        - run-network-integration-tests-nxos
 
 - job:
     name: run-openvswitch-integration-tests
@@ -37,3 +38,20 @@
     vars:
       platform: vyos
       tests_user: vyos
+
+- job:
+    name: network-integration-tests-nxos
+    files:
+      - ^lib/ansible/modules/network/nxos/.*$
+      - ^test/integration/targets/nxos.*
+      - ^\.zuul.yaml$
+      - ^playbooks/network-integration-tests-nxos/.*$
+    run: playbooks/network-integration-tests-nxos/run.yaml
+    nodeset:
+      nodes:
+        - name: bastion
+          label: ubuntu-xenial
+        - name: nxos
+          label: nxos
+    vars:
+      platform: nxos
