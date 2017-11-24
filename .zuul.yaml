@@ -54,3 +54,6 @@
     vars:
       test_platform: nxos
       test_port: 8022
+      test_custom_options:
+        cli:
+          transport: cli
