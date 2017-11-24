@@ -55,6 +55,7 @@
       test_platform: nxos
       test_port: 8022
       test_custom_options:
+        ansible_ssh_pass: zuul
         cli:
           transport: cli
         nxapi:                                                         
