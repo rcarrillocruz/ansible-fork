@@ -4,7 +4,7 @@
       jobs:
         - run-openvswitch-integration-tests
         - run-vyos-integration-tests
-        - run-network-integration-tests-nxos
+        - network-integration-tests-nxos
 
 - job:
     name: run-openvswitch-integration-tests
