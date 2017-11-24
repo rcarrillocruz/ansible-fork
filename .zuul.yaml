@@ -51,6 +51,6 @@
         - name: bastion
           label: ubuntu-xenial
         - name: nxos
-          label: nxos
+          label: nxos-7.0.3.I5.1
     vars:
       platform: nxos
