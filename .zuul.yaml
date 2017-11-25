@@ -4,6 +4,7 @@
       jobs:
         - run-openvswitch-integration-tests
         - run-vyos-integration-tests
+        - network-integration-tests-nxos
 
 - job:
     name: run-openvswitch-integration-tests
@@ -36,4 +37,30 @@
           label: vyos-1.1.7
     vars:
       platform: vyos
-      tests_user: vyos
+
+- job:
+    name: network-integration-tests-nxos
+    files:
+      - ^lib/ansible/modules/network/nxos/.*$
+      - ^test/integration/targets/nxos.*
+      - ^playbooks/network-integration-tests-nxos/.*$
+    run: playbooks/network-integration-tests-nxos/run.yaml
+    nodeset:
+      nodes:
+        - name: bastion
+          label: ubuntu-xenial
+        - name: nxos
+          label: nxos-7.0.3.I5.1
+    vars:
+      test_platform: nxos
+      test_port: 8022
+      test_custom_options:
+        debug: False
+        ansible_user: admin
+        ansible_ssh_pass: admin
+        cli:
+          transport: cli
+        nxapi:                                                         
+          transport: nxapi                                             
+          use_ssl: no                                                  
+          port: 8080
