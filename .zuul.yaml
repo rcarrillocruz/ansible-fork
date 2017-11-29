@@ -2,17 +2,16 @@
     name: rcarrillocruz-org/ansible-fork
     check:
       jobs:
-        - run-openvswitch-integration-tests
-        - run-vyos-integration-tests
+        - network-integration-tests-openvswitch
+        - network-integration-tests-vyos
         - network-integration-tests-nxos
 
 - job:
-    name: run-openvswitch-integration-tests
+    name: network-integration-tests-openvswitch
+    parent: network-integration-tests
     files:
       - ^lib/ansible/modules/network/ovs/.*$
       - ^test/integration/targets/openvswitch.*
-      - ^playbooks/run-openvswitch-integration-tests/.*$
-    run: playbooks/run-openvswitch-integration-tests/run.yaml
     nodeset:
       nodes:
         - name: bastion
@@ -20,15 +19,15 @@
         - name: openvswitch
           label: ubuntu-xenial
     vars:
-      platform: openvswitch
+      net_platform: openvswitch
+      net_become: yes
 
 - job:
-    name: run-vyos-integration-tests
+    name: network-integration-tests-vyos
+    parent: network-integration-tests
     files:
       - ^lib/ansible/modules/network/vyos/.*$
       - ^test/integration/targets/vyos.*
-      - ^playbooks/run-vyos-integration-tests/.*$
-    run: playbooks/run-vyos-integration-tests/run.yaml
     nodeset:
       nodes:
         - name: bastion
@@ -36,15 +35,14 @@
         - name: vyos
           label: vyos-1.1.7
     vars:
-      platform: vyos
+      net_platform: vyos
 
 - job:
     name: network-integration-tests-nxos
+    parent: network-integration-tests
     files:
       - ^lib/ansible/modules/network/nxos/.*$
       - ^test/integration/targets/nxos.*
-      - ^playbooks/network-integration-tests-nxos/.*$
-    run: playbooks/network-integration-tests-nxos/run.yaml
     nodeset:
       nodes:
         - name: bastion
@@ -52,11 +50,11 @@
         - name: nxos
           label: nxos-7.0.3.I5.1
     vars:
-      test_platform: nxos
-      test_port: 8022
-      test_custom_options:
+      net_platform: nxos
+      net_port: 8022
+      net_user: admin
+      net_custom_options:
         debug: False
-        ansible_user: admin
         ansible_ssh_pass: admin
         cli:
           transport: cli
