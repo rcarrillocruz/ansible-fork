@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # coding: utf-8 -*-
 
-
 #
 # (c) 2015, Mark Hamilton <mhamilton@vmware.com>
 # Portions copyright @ 2015 VMware, Inc.

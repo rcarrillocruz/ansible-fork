@@ -14,6 +14,10 @@ Ansible Changes By Release
 
 ### Deprecations
 * Previously deprecated 'hostfile' config settings have been 're-deprecated' as previously code did not warn about deprecated configuration settings.
+* Using Ansible provided Jinja tests as filters is deprecated and will be removed in Ansible 2.9
+* `stat` and `win_stat` have deprecated `get_md5` and the `md5` return value
+  and these options will be removed in Ansible 2.9. `get_md5: no` will still be
+  allowed in 2.9 but will finally be removed 2 versions after that.
 
 ### Minor Changes
 * added a few new magic vars corresponding to configuration/command line options:
@@ -27,6 +31,10 @@ Ansible Changes By Release
 * combine filter now accepts a list of dicts as well as dicts directly
 * New CLI options for ansible-inventory, ansible-console and ansible to allow
   specifying a playbook_dir to be used for relative search paths.
+* `stat` and `win_stat` have changed the default value of `get_md5` to `False` which will result
+  in the `md5` return value not being returned. This option will be removed altogether in Ansible
+  2.9. use `get_checksum: True` with `checksum_algorithm: md5` to return an md5 hash of the file
+  under the `checksum` return value.
 
 #### Deprecated Modules (to be removed in 2.9):
 * ec2_ami_find
@@ -142,7 +150,7 @@ Ansible Changes By Release
 * Now deprecated configuration options issue warnings when set.
 * Removed unused and deprecated config option `pattern`
 * Updated the copy of six bundled for modules to use from 1.4.1 to 1.10.0
-* The `include_dir` var is not a global anymore, as we now allow multiple inventory sources, it is now host dependant.
+* The `inventory_dir` var is not a global anymore, as we now allow multiple inventory sources, it is now host dependant.
   This means it cannot be used wherever host vars are not permitted, for example in task/handler names.
 * Fixed a cornercase with ini inventory vars.  Previously, if an inventory var
   was a quoted string with hash marks ("#") in it then the parsed string

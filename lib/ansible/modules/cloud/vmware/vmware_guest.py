@@ -52,6 +52,7 @@ options:
     description:
     - UUID of the instance to manage if known, this is VMware's unique identifier.
     - This is required if name is not supplied.
+    - Please note that a supplied UUID will be ignored on VM creation, as VMware creates the UUID internally.
   template:
     description:
     - Template used to create VM.
@@ -100,7 +101,8 @@ options:
     - A list of disks to add.
     - 'Valid attributes are:'
     - ' - C(size_[tb,gb,mb,kb]) (integer): Disk storage size in specified unit.'
-    - ' - C(type) (string): Valid value is C(thin) (default: None).'
+    - ' - C(type) (string): Valid values are:'
+    - '   C(thin) thin disk, C(eagerzeroedthick) eagerzeroedthick disk, added in version 2.5, Default: C(None) thick disk, no eagerzero.'
     - ' - C(datastore) (string): Datastore to use for the disk. If C(autoselect_datastore) is enabled, filter datastore selection.'
     - ' - C(autoselect_datastore) (bool): select the less used datastore.'
   cdrom:
@@ -312,12 +314,13 @@ instance:
     sample: None
 '''
 
+import re
 import time
 
 HAS_PYVMOMI = False
 try:
     import pyVmomi
-    from pyVmomi import vim
+    from pyVmomi import vim, vmodl
 
     HAS_PYVMOMI = True
 except ImportError:
@@ -469,13 +472,28 @@ class PyVmomiDeviceHelper(object):
         nic.device.connectable.startConnected = True
         nic.device.connectable.allowGuestControl = True
         nic.device.connectable.connected = True
-        if 'mac' in device_infos:
-            nic.device.addressType = 'assigned'
+        if 'mac' in device_infos and self.is_valid_mac_addr(device_infos['mac']):
+            nic.device.addressType = 'manual'
             nic.device.macAddress = device_infos['mac']
         else:
             nic.device.addressType = 'generated'
 
         return nic
+
+    @staticmethod
+    def is_valid_mac_addr(mac_addr):
+        """
+        Function to validate MAC address for given string
+        Args:
+            mac_addr: string to validate as MAC address
+
+        Returns: (Boolean) True if string is valid MAC address, otherwise False
+        """
+        ret = False
+        mac_addr_regex = re.compile('[0-9a-f]{2}([-:])[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$')
+        if mac_addr_regex.match(mac_addr):
+            ret = True
+        return ret
 
 
 class PyVmomiCache(object):
@@ -768,9 +786,10 @@ class PyVmomiHelper(PyVmomi):
                 # VDS switch
                 pg_obj = find_obj(self.content, [vim.dvs.DistributedVirtualPortgroup], network_devices[key]['name'])
 
-                if (nic.device.backing and
-                        (nic.device.backing.port.portgroupKey != pg_obj.key or
-                         nic.device.backing.port.switchUuid != pg_obj.config.distributedVirtualSwitch.uuid)):
+                if (nic.device.backing and not hasattr(nic.device.backing, 'port')):
+                    nic_change_detected = True
+                elif (nic.device.backing and (nic.device.backing.port.portgroupKey != pg_obj.key or
+                      nic.device.backing.port.switchUuid != pg_obj.config.distributedVirtualSwitch.uuid)):
                     nic_change_detected = True
 
                 dvs_port_connection = vim.dvs.PortConnection()
@@ -1017,8 +1036,11 @@ class PyVmomiHelper(PyVmomi):
 
             # is it thin?
             if 'type' in expected_disk_spec:
-                if expected_disk_spec.get('type', '').lower() == 'thin':
+                disk_type = expected_disk_spec.get('type', '').lower()
+                if disk_type == 'thin':
                     diskspec.device.backing.thinProvisioned = True
+                elif disk_type == 'eagerzeroedthick':
+                    diskspec.device.backing.eagerlyScrub = True
 
             # which datastore?
             if expected_disk_spec.get('datastore'):
@@ -1271,7 +1293,16 @@ class PyVmomiHelper(PyVmomi):
 
         # abort if no strategy was successful
         if f_obj is None:
-            self.module.fail_json(msg='No folder matched the path: %(folder)s' % self.params)
+            # Add some debugging values in failure.
+            details = {
+                'datacenter': datacenter.name,
+                'datacenter_path': dcpath,
+                'folder': self.params['folder'],
+                'full_search_path': fullpath,
+            }
+            self.module.fail_json(msg='No folder %s matched in the search path : %s' % (self.params['folder'], fullpath),
+                                  details=details)
+
         destfolder = f_obj
 
         if self.params['template']:
@@ -1456,7 +1487,11 @@ class PyVmomiHelper(PyVmomi):
 
         # Mark VM as Template
         if self.params['is_template'] and not self.current_vm_obj.config.template:
-            self.current_vm_obj.MarkAsTemplate()
+            try:
+                self.current_vm_obj.MarkAsTemplate()
+            except vmodl.fault.NotSupported as e:
+                self.module.fail_json(msg="Failed to mark virtual machine [%s] "
+                                          "as template: %s" % (self.params['name'], e.msg))
             change_applied = True
 
         # Mark Template as VM

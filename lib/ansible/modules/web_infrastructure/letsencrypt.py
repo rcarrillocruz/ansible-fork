@@ -61,7 +61,7 @@ options:
     description:
       - "URI to a terms of service document you agree to when using the
          ACME service at C(acme_directory)."
-    default: 'https://letsencrypt.org/documents/LE-SA-v1.1.1-August-1-2016.pdf'
+      - Default is latest gathered from C(acme_directory) URL.
   challenge:
     description: The challenge to be performed.
     choices: [ 'http-01', 'dns-01', 'tls-sni-02']
@@ -110,7 +110,7 @@ EXAMPLES = '''
 # - copy:
 #     dest: /var/www/html/{{ sample_com_challenge['challenge_data']['sample.com']['http-01']['resource'] }}
 #     content: "{{ sample_com_challenge['challenge_data']['sample.com']['http-01']['resource_value'] }}"
-#     when: sample_com_challenge|changed
+#     when: sample_com_challenge is changed
 
 - letsencrypt:
     account_key: /etc/pki/cert/private/account.key
@@ -155,6 +155,7 @@ import binascii
 import copy
 import hashlib
 import json
+import locale
 import os
 import re
 import shutil
@@ -305,11 +306,12 @@ class ACMEAccount(object):
     '''
     def __init__(self, module):
         self.module = module
-        self.agreement = module.params['agreement']
         self.key = module.params['account_key']
         self.email = module.params['account_email']
         self.data = module.params['data']
         self.directory = ACMEDirectory(module)
+        self.agreement = module.params['agreement'] or self.directory['meta']['terms-of-service']
+
         self.uri = None
         self.changed = False
 
@@ -791,7 +793,7 @@ def main():
             account_key=dict(required=True, type='path'),
             account_email=dict(required=False, default=None, type='str'),
             acme_directory=dict(required=False, default='https://acme-staging.api.letsencrypt.org/directory', type='str'),
-            agreement=dict(required=False, default='https://letsencrypt.org/documents/LE-SA-v1.1.1-August-1-2016.pdf', type='str'),
+            agreement=dict(required=False, type='str'),
             challenge=dict(required=False, default='http-01', choices=['http-01', 'dns-01', 'tls-sni-02'], type='str'),
             csr=dict(required=True, aliases=['src'], type='path'),
             data=dict(required=False, no_log=True, default=None, type='dict'),
@@ -804,6 +806,7 @@ def main():
 
     # AnsibleModule() changes the locale, so change it back to C because we rely on time.strptime() when parsing certificate dates.
     module.run_command_environ_update = dict(LANG='C', LC_ALL='C', LC_MESSAGES='C', LC_CTYPE='C')
+    locale.setlocale(locale.LC_ALL, 'C')
 
     cert_days = get_cert_days(module, module.params['dest'])
     if cert_days < module.params['remaining_days']:

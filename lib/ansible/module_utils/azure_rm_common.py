@@ -71,8 +71,8 @@ AZURE_COMMON_REQUIRED_IF = [
 ANSIBLE_USER_AGENT = 'Ansible/{0}'.format(ANSIBLE_VERSION)
 CLOUDSHELL_USER_AGENT_KEY = 'AZURE_HTTP_USER_AGENT'
 
-CIDR_PATTERN = re.compile("(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1"
-                          "[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))")
+CIDR_PATTERN = re.compile(r"(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1"
+                          r"[0-9]{2}|2[0-4][0-9]|25[0-5])(/([0-9]|[1-2][0-9]|3[0-2]))")
 
 AZURE_SUCCESS_STATE = "Succeeded"
 AZURE_FAILED_STATE = "Failed"
@@ -415,8 +415,8 @@ class AzureRMModuleBase(object):
         '''
         try:
             return self.rm_client.resource_groups.get(resource_group)
-        except CloudError:
-            self.fail("Parameter error: resource group {0} not found".format(resource_group))
+        except CloudError as cloud_error:
+            self.fail("Error retrieving resource group {0} - {1}".format(resource_group, cloud_error.message))
         except Exception as exc:
             self.fail("Error retrieving resource group {0} - {1}".format(resource_group, str(exc)))
 
@@ -528,7 +528,7 @@ class AzureRMModuleBase(object):
             self.log("dependencies: ")
             self.log(str(dependencies))
         serializer = Serializer(classes=dependencies)
-        return serializer.body(obj, class_name)
+        return serializer.body(obj, class_name, keep_readonly=True)
 
     def get_poller_result(self, poller, wait=5):
         '''

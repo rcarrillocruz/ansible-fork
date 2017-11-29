@@ -22,7 +22,7 @@ The following is a list of module_utils files and a general description. The mod
 - ec2.py - Definitions and utilities for modules working with Amazon EC2
 - eos.py - Helper functions for modules working with EOS networking devices.
 - f5.py - Helper functions for modules working with F5 networking devices.
-- facts.py - Helper functions for modules that return facts.
+- facts/- Folder containing helper functions for modules that return facts. See https://github.com/ansible/ansible/pull/23012 for more information.
 - gce.py - Definitions and helper functions for modules that work with Google Compute Engine resources.
 - ios.py - Definitions and helper functions for modules that manage Cisco IOS networking devices
 - iosxr.py - Definitions and helper functions for modules that manage Cisco IOS-XR networking devices
@@ -30,6 +30,7 @@ The following is a list of module_utils files and a general description. The mod
 - junos.py -  Definitions and helper functions for modules that manage Junos networking devices
 - known_hosts.py - utilities for working with known_hosts file
 - manageiq.py - Functions and utilities for modules that work with ManageIQ platform and its resources.
+- mlnxos.py - Definitions and helper functions for modules that manage Mellanox MLNX-OS networking devices
 - mysql.py - Allows modules to connect to a MySQL instance
 - netapp.py - Functions and utilities for modules that work with the NetApp storage platforms.
 - netcfg.py - Configuration utility functions for use by networking modules

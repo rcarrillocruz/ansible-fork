@@ -48,23 +48,18 @@ import json
 import logging
 import re
 import os
-import signal
 import socket
 import traceback
 
-from collections import Sequence
-
 from ansible import constants as C
 from ansible.errors import AnsibleConnectionFailure
-from ansible.module_utils.six import PY3, BytesIO, binary_type
+from ansible.module_utils.six import BytesIO, PY3
 from ansible.module_utils.six.moves import cPickle
 from ansible.module_utils._text import to_bytes, to_text
 from ansible.playbook.play_context import PlayContext
 from ansible.plugins.loader import cliconf_loader, terminal_loader, connection_loader
 from ansible.plugins.connection import ConnectionBase
-from ansible.plugins.connection.local import Connection as LocalConnection
-from ansible.plugins.connection.paramiko_ssh import Connection as ParamikoSshConnection
-from ansible.utils.path import unfrackpath, makedirs_safe
+from ansible.utils.path import unfrackpath
 
 try:
     from __main__ import display
@@ -83,7 +78,6 @@ class Connection(ConnectionBase):
     def __init__(self, play_context, new_stdin, *args, **kwargs):
         super(Connection, self).__init__(play_context, new_stdin, *args, **kwargs)
 
-        self.ssh = None
         self._ssh_shell = None
 
         self._matched_prompt = None
@@ -91,7 +85,8 @@ class Connection(ConnectionBase):
         self._last_response = None
         self._history = list()
 
-        self._local = LocalConnection(play_context, new_stdin, *args, **kwargs)
+        self._local = connection_loader.get('local', play_context, '/dev/null')
+        self._local.set_options()
 
         self._terminal = None
         self._cliconf = None
@@ -120,7 +115,7 @@ class Connection(ConnectionBase):
                 cmd = json.loads(to_text(cmd, errors='surrogate_or_strict'))
                 kwargs = {'command': to_bytes(cmd['command'], errors='surrogate_or_strict')}
                 for key in ('prompt', 'answer', 'send_only'):
-                    if key in cmd:
+                    if cmd.get(key) is not None:
                         kwargs[key] = to_bytes(cmd[key], errors='surrogate_or_strict')
                 return self.send(**kwargs)
             except ValueError:
@@ -149,11 +144,11 @@ class Connection(ConnectionBase):
         messages = ['updating play_context for connection']
         if self._play_context.become is False and play_context.become is True:
             auth_pass = play_context.become_pass
-            self._terminal.on_authorize(passwd=auth_pass)
+            self._terminal.on_become(passwd=auth_pass)
             messages.append('authorizing connection')
 
         elif self._play_context.become is True and not play_context.become:
-            self._terminal.on_deauthorize()
+            self._terminal.on_unbecome()
             messages.append('deauthorizing connection')
 
         self._play_context = play_context
@@ -166,15 +161,14 @@ class Connection(ConnectionBase):
         if self.connected:
             return
 
-        if self._play_context.password and not self._play_context.private_key_file:
-            C.PARAMIKO_LOOK_FOR_KEYS = False
-
-        ssh = ParamikoSshConnection(self._play_context, '/dev/null')._connect()
-        self.ssh = ssh.ssh
+        p = connection_loader.get('paramiko', self._play_context, '/dev/null')
+        p.set_options(direct={'look_for_keys': not bool(self._play_context.password and not self._play_context.private_key_file)})
+        p.force_persistence = self.force_persistence
+        ssh = p._connect()
 
         display.vvvv('ssh connection done, setting terminal', host=self._play_context.remote_addr)
 
-        self._ssh_shell = self.ssh.invoke_shell()
+        self._ssh_shell = ssh.ssh.invoke_shell()
         self._ssh_shell.settimeout(self._play_context.timeout)
 
         network_os = self._play_context.network_os
@@ -202,9 +196,9 @@ class Connection(ConnectionBase):
         self._terminal.on_open_shell()
 
         if self._play_context.become and self._play_context.become_method == 'enable':
-            display.vvvv('firing event: on_authorize', host=self._play_context.remote_addr)
+            display.vvvv('firing event: on_become', host=self._play_context.remote_addr)
             auth_pass = self._play_context.become_pass
-            self._terminal.on_authorize(passwd=auth_pass)
+            self._terminal.on_become(passwd=auth_pass)
 
         display.vvvv('ssh connection has completed successfully', host=self._play_context.remote_addr)
         self._connected = True
@@ -236,7 +230,8 @@ class Connection(ConnectionBase):
         '''
         if self._socket_path:
             display.vvvv('resetting persistent connection for socket_path %s' % self._socket_path, host=self._play_context.remote_addr)
-            self.shutdown()
+            self.close()
+        display.vvvv('reset call on connection instance', host=self._play_context.remote_addr)
 
     def close(self):
         '''
@@ -265,6 +260,10 @@ class Connection(ConnectionBase):
 
         while True:
             data = self._ssh_shell.recv(256)
+
+            # when a channel stream is closed, received data will be empty
+            if not data:
+                break
 
             recv.write(data)
             offset = recv.tell() - 256 if recv.tell() > 256 else 0

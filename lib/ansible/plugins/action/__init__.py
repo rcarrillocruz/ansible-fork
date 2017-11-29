@@ -93,11 +93,11 @@ class ActionBase(with_metaclass(ABCMeta, object)):
 
         result = {}
 
-        if self._task.async and not self._supports_async:
+        if self._task.async_val and not self._supports_async:
             raise AnsibleActionFail('async is not supported for this task.')
         elif self._play_context.check_mode and not self._supports_check_mode:
             raise AnsibleActionSkip('check mode is not supported for this task.')
-        elif self._task.async and self._play_context.check_mode:
+        elif self._task.async_val and self._play_context.check_mode:
             raise AnsibleActionFail('check mode and async cannot be used on same task.')
 
         return result
@@ -159,7 +159,7 @@ class ActionBase(with_metaclass(ABCMeta, object)):
 
         (module_data, module_style, module_shebang) = modify_module(module_name, module_path, module_args,
                                                                     task_vars=task_vars, module_compression=self._play_context.module_compression,
-                                                                    async_timeout=self._task.async, become=self._play_context.become,
+                                                                    async_timeout=self._task.async_val, become=self._play_context.become,
                                                                     become_method=self._play_context.become_method, become_user=self._play_context.become_user,
                                                                     become_password=self._play_context.become_pass,
                                                                     environment=final_environment)
@@ -478,7 +478,6 @@ class ActionBase(with_metaclass(ABCMeta, object)):
         module_args = dict(
             path=path,
             follow=follow,
-            get_md5=False,
             get_checksum=checksum,
             checksum_algo='sha1',
         )
@@ -612,6 +611,21 @@ class ActionBase(with_metaclass(ABCMeta, object)):
         # make sure all commands use the designated shell executable
         module_args['_ansible_shell_executable'] = self._play_context.executable
 
+    def _update_connection_options(self, options, variables=None):
+        ''' ensures connections have the appropriate information '''
+        update = {}
+
+        if getattr(self.connection, 'glob_option_vars', False):
+            # if the connection allows for it, pass any variables matching it.
+            if variables is not None:
+                for varname in variables:
+                    if varname.match('ansible_%s_' % self.connection._load_name):
+                        update[varname] = variables[varname]
+
+        # always override existing with options
+        update.update(options)
+        self.connection.set_options(update)
+
     def _execute_module(self, module_name=None, module_args=None, tmp=None, task_vars=None, persist_files=False, delete_remote_tmp=True, wrap_async=False):
         '''
         Transfer and run a module along with its arguments.
@@ -688,7 +702,7 @@ class ActionBase(with_metaclass(ABCMeta, object)):
             self._transfer_data(remote_async_module_path, async_module_data)
             remote_files.append(remote_async_module_path)
 
-            async_limit = self._task.async
+            async_limit = self._task.async_val
             async_jid = str(random.randint(0, 999999999999))
 
             # call the interpreter for async_wrapper directly
