@@ -1,5 +1,4 @@
 ---
-
 - debug: msg="START cli/bad_operator.yaml"
 
 - name: test bad operator
