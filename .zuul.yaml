@@ -29,6 +29,7 @@
     files:
       - ^lib/ansible/modules/network/vyos/.*$
       - ^test/integration/targets/vyos.*
+      - .zuul.yaml
     nodeset:
       nodes:
         - name: bastion
@@ -45,6 +46,7 @@
     files:
       - ^lib/ansible/modules/network/vyos/.*$
       - ^test/integration/targets/vyos.*
+      - .zuul.yaml
     nodeset:
       nodes:
         - name: bastion
