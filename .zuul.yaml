@@ -3,7 +3,8 @@
     check:
       jobs:
         - network-integration-tests-openvswitch
-        - network-integration-tests-vyos
+        - network-integration-tests-vyos-a_m
+        - network-integration-tests-vyos-n_z
         - network-integration-tests-nxos
 
 - job:
@@ -23,7 +24,7 @@
       net_become: yes
 
 - job:
-    name: network-integration-tests-vyos
+    name: network-integration-tests-vyos-a_m
     parent: network-integration-tests
     files:
       - ^lib/ansible/modules/network/vyos/.*$
@@ -36,6 +37,23 @@
           label: vyos-1.1.7
     vars:
       net_platform: vyos
+      net_target_regex: _[a-m].*
+
+- job:
+    name: network-integration-tests-vyos-n_z
+    parent: network-integration-tests
+    files:
+      - ^lib/ansible/modules/network/vyos/.*$
+      - ^test/integration/targets/vyos.*
+    nodeset:
+      nodes:
+        - name: bastion
+          label: ubuntu-xenial
+        - name: vyos
+          label: vyos-1.1.7
+    vars:
+      net_platform: vyos
+      net_target_regex: _[n-z].*
 
 - job:
     name: network-integration-tests-nxos
