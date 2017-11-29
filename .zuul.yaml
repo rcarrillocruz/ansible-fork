@@ -39,6 +39,7 @@
 
 - job:
     name: network-integration-tests-nxos
+    parent: network-integration-tests
     files:
       - ^lib/ansible/modules/network/nxos/.*$
       - ^test/integration/targets/nxos.*
