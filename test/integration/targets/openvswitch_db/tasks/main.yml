@@ -1,4 +1,5 @@
 ---
+
 - name: collect all test cases
   find:
     paths: "{{ role_path }}/tests"
