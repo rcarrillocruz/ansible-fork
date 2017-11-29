@@ -20,6 +20,7 @@
           label: ubuntu-xenial
     vars:
       net_platform: openvswitch
+      net_become: yes
 
 - job:
     name: network-integration-tests-vyos
