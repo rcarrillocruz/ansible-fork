@@ -1,5 +1,4 @@
 ---
-
 - name: Setup
   vyos_banner:
     banner: pre-login
