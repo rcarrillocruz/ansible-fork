@@ -15,7 +15,7 @@
     nodeset:
       nodes:
         - name: bastion
-          label: ubuntu-xenial
+          label: centos-7
         - name: openvswitch
           label: ubuntu-xenial
     vars:
